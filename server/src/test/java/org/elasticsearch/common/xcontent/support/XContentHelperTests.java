@@ -381,6 +381,28 @@ public class XContentHelperTests extends ESTestCase {
         }
     }
 
+    public void testYamlWithoutDocStart() throws IOException {
+        BytesReference inputYaml = new BytesArray("field: \"value\"\n");
+        try (XContentParser parser = XContentHelper.createParser(XContentParserConfiguration.EMPTY, inputYaml, XContentType.YAML)) {
+            assertEquals(XContentParser.Token.START_OBJECT, parser.nextToken());
+            assertEquals(XContentParser.Token.FIELD_NAME, parser.nextToken());
+            assertEquals("field", parser.currentName());
+            assertEquals(XContentParser.Token.VALUE_STRING, parser.nextToken());
+            assertEquals("value", parser.text());
+            assertEquals(XContentParser.Token.END_OBJECT, parser.nextToken());
+        }
+
+        BytesReference compressedYaml = new CompressedXContent(inputYaml).compressedReference();
+        try (XContentParser parser = XContentHelper.createParser(XContentParserConfiguration.EMPTY, compressedYaml, XContentType.YAML)) {
+            assertEquals(XContentParser.Token.START_OBJECT, parser.nextToken());
+            assertEquals(XContentParser.Token.FIELD_NAME, parser.nextToken());
+            assertEquals("field", parser.currentName());
+            assertEquals(XContentParser.Token.VALUE_STRING, parser.nextToken());
+            assertEquals("value", parser.text());
+            assertEquals(XContentParser.Token.END_OBJECT, parser.nextToken());
+        }
+    }
+
     public void testEmptyChildBytes() throws IOException {
 
         String inputJson = "{ \"mappings\" : {} }";
